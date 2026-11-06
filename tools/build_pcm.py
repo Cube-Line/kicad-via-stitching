@@ -17,11 +17,12 @@ The produced archive has this layout (required by KiCad PCM):
 from __future__ import annotations
 
 import argparse
+import datetime
 import hashlib
 import json
 import os
-import shutil
 import sys
+import time
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -65,7 +66,13 @@ def build_zip(version: str) -> tuple[str, int, int, str]:
     install_size = 0
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for abs_path, arc_path in files:
-            zf.write(abs_path, arc_path)
+            # Fixed timestamp keeps the archive byte-identical across builds,
+            # so the SHA-256 in packages.json stays valid when rebuilding.
+            info = zipfile.ZipInfo(arc_path, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            with open(abs_path, "rb") as fp:
+                zf.writestr(info, fp.read(), compresslevel=9)
             install_size += os.path.getsize(abs_path)
 
     download_size = os.path.getsize(zip_path)
@@ -135,10 +142,37 @@ def main() -> int:
     index_path = os.path.join(ROOT, "packages.json")
     entry = make_index_entry(metadata, version, download_url,
                              download_size, install_size, sha256)
-    with open(index_path, "w", encoding="utf-8") as fp:
-        json.dump({"packages": [entry]}, fp, indent=4, ensure_ascii=False)
-        fp.write("\n")
+    index_bytes = (json.dumps({"packages": [entry]}, indent=4, ensure_ascii=False) + "\n").encode("utf-8")
+    with open(index_path, "wb") as fp:
+        fp.write(index_bytes)
+    index_sha256 = hashlib.sha256(index_bytes).hexdigest()
     print(f"index        : {index_path}")
+    print(f"index sha256 : {index_sha256}")
+
+    # KiCad's "Manage Repositories" expects a Repository document, not the
+    # PackageArray itself, so generate repository.json alongside packages.json.
+    raw_base = (
+        f"https://raw.githubusercontent.com/{repo.split('github.com/')[-1]}/main"
+        if "github.com/" in repo else repo
+    )
+    timestamp = int(time.time())
+    repository = {
+        "$schema": "https://go.kicad.org/pcm/schemas/v1#/definitions/Repository",
+        "name": "Cube-Line KiCad plugins",
+        "maintainer": metadata["maintainer"],
+        "packages": {
+            "url": f"{raw_base}/packages.json",
+            "sha256": index_sha256,
+            "update_timestamp": timestamp,
+            "update_time_utc": datetime.datetime.fromtimestamp(
+                timestamp, datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        },
+    }
+    repo_path = os.path.join(ROOT, "repository.json")
+    with open(repo_path, "w", encoding="utf-8") as fp:
+        json.dump(repository, fp, indent=4, ensure_ascii=False)
+        fp.write("\n")
+    print(f"repository   : {repo_path}")
     return 0
 
 

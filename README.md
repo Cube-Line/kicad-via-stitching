@@ -36,8 +36,16 @@ KiCad 10 可用的 PCB 铺铜区过孔缝合插件（Via Stitching），界面�
 3. 添加以下仓库地址：
 
    ```
-   https://raw.githubusercontent.com/Cube-Line/kicad-via-stitching/main/packages.json
+   https://raw.githubusercontent.com/Cube-Line/kicad-via-stitching/main/repository.json
    ```
+
+   > 注意：这里要填 `repository.json`，不是 `packages.json`。KiCad 要求仓库入口是一个 Repository 描述文件，`packages.json` 只是它引用的包列表。
+   >
+   > 如果 `raw.githubusercontent.com` 访问不畅，可改用 jsDelivr 镜像：
+   >
+   > ```
+   > https://cdn.jsdelivr.net/gh/Cube-Line/kicad-via-stitching@main/repository.json
+   > ```
 
 4. 回到 **插件 / Plugins** 标签页，找到 **Via Stitching Generator (KiCad 10)**，点击安装。
 5. 重启 PCB 编辑器（pcbnew），在 **工具 → 外部插件** 或工具栏中找到 **过孔缝合生成器**。
@@ -76,27 +84,33 @@ KiCad 10 可用的 PCB 铺铜区过孔缝合插件（Via Stitching），界面�
 
 ## 开发与发布
 
-生成 PCM 压缩包并刷新 `packages.json`：
+生成 PCM 压缩包并刷新 `packages.json` / `repository.json`：
 
 ```bash
 python3 tools/build_pcm.py
 ```
 
+> 压缩包使用固定时间戳，同样内容重复构建会得到完全相同的 SHA-256，因此 `packages.json` 里的校验值不会因重新打包而失效。
+
 发布新版本：
 
 1. 修改 `metadata.json` 中 `versions[0].version`。
-2. 运行 `python3 tools/build_pcm.py` 生成 `dist/kicad-via-stitching-<版本>-pcm.zip`。
-3. 提交并推送。
+2. 运行 `python3 tools/build_pcm.py` 生成 `dist/kicad-via-stitching-<版本>-pcm.zip`，并更新 `packages.json`、`repository.json`。
+3. 提交并推送（提交信息中带上版本号）。
 4. 创建 tag `v<版本>` 与对应 GitHub Release。
 5. 把生成的 zip 作为 Release 附件上传（文件名需与 `packages.json` 中的 `download_url` 一致）。
 6. 确认 `packages.json` 中的 `download_sha256` / `download_size` / `install_size` 与附件一致后推送。
+
+`.github/workflows/publish.yml` 会在推送 `v*` tag 时校验 `dist/` 中的压缩包与 `packages.json` 一致，然后创建 Release 并上传该文件。
 
 ## 目录结构
 
 ```
 .
 ├── metadata.json              # 包元数据（会打进 PCM zip）
-├── packages.json              # PCM 仓库索引（KiCad 读取此文件）
+├── packages.json              # PCM 包列表（PackageArray）
+├── repository.json            # PCM 仓库入口（Manage Repositories 里填这个）
+├── dist/                      # 构建产物（release 附件）
 ├── plugins/
 │   ├── __init__.py
 │   └── ViaStitching/

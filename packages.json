@@ -1,0 +1,55 @@
+{
+    "packages": [
+        {
+            "$schema": "https://go.kicad.org/pcm/schemas/v1",
+            "name": "Via Stitching Generator (KiCad 10)",
+            "description": "Generate via stitching for PCB copper zones. Fork of JS Reynaud's ViaStitching plugin with KiCad 10 support and a Chinese UI.",
+            "description_full": "Adds a \"Via Stitching Generator\" action to the PCB editor that fills copper zones with stitching vias (rectangular grid, concentric rings, or along the zone outline).\n\nThis is a KiCad 10 compatibility fork of the ViaStitching plugin from jsreynaud/kicad-action-scripts. Fixes included:\n- KiCad 10 BOARD.GetBoardPolygonOutlines() signature change\n- Correct integer major-version checks (\"10.0.6\" no longer compares as < \"7\")\n- GetAssignedPriority() instead of the removed GetPriority()\n- PCB_VIA.GetWidth() layer argument on KiCad 10\n- Multi-layer concentric/outline mode no longer reports \"No areas to fill\"\n- wx sizer assertion in the parameter dialog\n\nThe user interface has been translated to Simplified Chinese. Vias are added to a group named \"ViaStitching <net>\" so they can be selected and deleted together.\n\nAfter running the tool, refill all zones (Edit -> Fill All Zones, or press B).",
+            "identifier": "com.github.cube-line.kicad-via-stitching",
+            "type": "plugin",
+            "author": {
+                "name": "JS Reynaud (original author)",
+                "contact": {
+                    "web": "https://github.com/jsreynaud/kicad-action-scripts"
+                }
+            },
+            "maintainer": {
+                "name": "Cube-Line",
+                "contact": {
+                    "web": "https://github.com/Cube-Line"
+                }
+            },
+            "license": "GPL-2.0",
+            "resources": {
+                "Github": "https://github.com/Cube-Line/kicad-via-stitching",
+                "Original project": "https://github.com/jsreynaud/kicad-action-scripts",
+                "Issue tracker": "https://github.com/Cube-Line/kicad-via-stitching/issues"
+            },
+            "tags": [
+                "via",
+                "stitching",
+                "zone",
+                "ground",
+                "pcbnew"
+            ],
+            "versions": [
+                {
+                    "version": "10.0.1",
+                    "status": "stable",
+                    "kicad_version": "10.0",
+                    "kicad_version_max": "10.0",
+                    "platforms": [
+                        "windows",
+                        "linux",
+                        "macos"
+                    ],
+                    "runtime": "swig",
+                    "download_url": "https://github.com/Cube-Line/kicad-via-stitching/releases/download/v10.0.1/kicad-via-stitching-10.0.1-pcm.zip",
+                    "download_size": 30520,
+                    "install_size": 203958,
+                    "download_sha256": "4d60eb0123bcdec7cd826a1e7d62e39b871b330d8c549158bacde796f8488456"
+                }
+            ]
+        }
+    ]
+}

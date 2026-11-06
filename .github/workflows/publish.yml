@@ -1,0 +1,52 @@
+name: Publish PCM package
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify archive matches packages.json
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, sys
+          index = json.load(open("packages.json", encoding="utf-8"))
+          version = index["packages"][0]["versions"][0]
+          url = version["download_url"]
+          name = url.rsplit("/", 1)[-1]
+          path = os.path.join("dist", name)
+          data = open(path, "rb").read()
+          actual = hashlib.sha256(data).hexdigest()
+          expected = version["download_sha256"]
+          print(f"archive : {path}")
+          print(f"sha256  : {actual}")
+          if actual != expected:
+              sys.exit(f"checksum mismatch: packages.json says {expected}")
+          if len(data) != version["download_size"]:
+              sys.exit("download_size mismatch")
+          PY
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY' > /tmp/asset_name
+          import json
+          index = json.load(open("packages.json", encoding="utf-8"))
+          url = index["packages"][0]["versions"][0]["download_url"]
+          print(url.rsplit("/", 1)[-1])
+          PY
+          ASSET="dist/$(cat /tmp/asset_name)"
+          TAG="${GITHUB_REF_NAME}"
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "KiCad Via Stitching $TAG" --notes "See README for installation instructions."
+          gh release upload "$TAG" "$ASSET" --clobber

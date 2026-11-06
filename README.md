@@ -46,6 +46,9 @@ KiCad 10 可用的 PCB 铺铜区过孔缝合插件（Via Stitching），界面�
    > ```
    > https://cdn.jsdelivr.net/gh/Cube-Line/kicad-via-stitching@main/repository.json
    > ```
+   >
+   > jsDelivr 有缓存（通常最长 12 小时），刚发布新版本后可能短暂看到旧版本；需要立即刷新时可访问
+   > `https://purge.jsdelivr.net/gh/Cube-Line/kicad-via-stitching@main/` 清理缓存。
 
 4. 回到 **插件 / Plugins** 标签页，找到 **Via Stitching Generator (KiCad 10)**，点击安装。
 5. 重启 PCB 编辑器（pcbnew），在 **工具 → 外部插件** 或工具栏中找到 **过孔缝合生成器**。

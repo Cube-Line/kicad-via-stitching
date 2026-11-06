@@ -151,6 +151,11 @@ def main() -> int:
 
     # KiCad's "Manage Repositories" expects a Repository document, not the
     # PackageArray itself, so generate repository.json alongside packages.json.
+    #
+    # Note: packages.sha256 is intentionally omitted. It is optional in the
+    # schema, and including it makes CDN mirrors (jsDelivr) break whenever one
+    # of the two files is served from a stale cache. Each package archive is
+    # still verified against download_sha256 in packages.json.
     raw_base = (
         f"https://raw.githubusercontent.com/{repo.split('github.com/')[-1]}/main"
         if "github.com/" in repo else repo
@@ -162,7 +167,6 @@ def main() -> int:
         "maintainer": metadata["maintainer"],
         "packages": {
             "url": f"{raw_base}/packages.json",
-            "sha256": index_sha256,
             "update_timestamp": timestamp,
             "update_time_utc": datetime.datetime.fromtimestamp(
                 timestamp, datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),

@@ -9,8 +9,7 @@
     },
     "packages": {
         "url": "https://raw.githubusercontent.com/Cube-Line/kicad-via-stitching/main/packages.json",
-        "sha256": "be4ee8f711e2b6d57724e696d627e5a489a7902f47c5081227a1e4d9ea0195c3",
-        "update_timestamp": 1793978806,
-        "update_time_utc": "2026-11-06 15:26:46"
+        "update_timestamp": 1793979011,
+        "update_time_utc": "2026-11-06 15:30:11"
     }
 }
